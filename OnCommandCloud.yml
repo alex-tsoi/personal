@@ -1,0 +1,50 @@
+---
+- hosts: localhost
+  name: Setup ONTAP
+  vars:
+    occm_host: "{{ host }}"
+    email: "{{ email }}"
+    password: "{{ password }}"
+  tasks:
+  - name: Get clientID
+    uri:
+      url: "http://{{ occm_host }}/occm/api/occm/system/support-services"
+      validate_certs: false
+      body_format: json
+      method: GET
+      headers:
+        Accept: application/json
+    register: client_id
+  - name: Get Token
+    uri:
+      url: "https://{{ client_id.json.portalService.auth0Information.domain }}/oauth/token"
+      validate_certs: false
+      body: '{"grant_type": "password","username": "{{ email }}","password": "{{ password }}","audience": "{{ client_id.json.portalService.auth0Information.audience }}","scope": "profile","client_id": "{{ client_id.json.portalService.auth0Information.clientId }}"}'
+      body_format: json
+      method: POST
+      headers:
+        Accept: application/json
+    register: token_id
+  - name: Get Tenent ID
+    uri:
+      url: "http://{{ occm_host }}/occm/api/tenants"
+      validate_certs: false
+      method: GET
+      headers:
+        Content-Type: application/json
+        Authorization: "{{ token_id.json.access_token }}"
+    register: tenant_id
+  - name: Create Cloud Volume ONTAP
+    uri:
+      url: "http://{{ occm_host }}/occm/api/vsa/working-environments"
+      validate_certs: false
+      body_format: json
+      method: POST
+      status: 202
+      headers:
+        Content-Type: application/json
+        Authorization: "{{ token_id.json.access_token }}"
+### AWS
+      body: '{"name":"ansible","tenantId":"{{ tenant_id.json[0].publicId }}","region":"us-east-1","subnetId":"subnet-a7b368fb","ebsVolumeType":"gp2","ebsVolumeSize": {"size": 500, "unit": "GB"},"dataEncryptionType":"NONE","ontapEncryptionParameters":null,"svmPassword":"netapp123","vpcId":"vpc-ccde3eb6","vsaMetadata":{"platformSerialNumber":null,"ontapVersion":"ONTAP-9.3.T1","licenseType":"cot-standard-paygo","instanceType":"m4.2xlarge"},"writingSpeedState":"NORMAL"}'
+### Azure
+      body: '{\"name":"vsaAzure","tenantId":"{{  tenant_id.json[0].publicId }]","region":"westus","vsaMetadata":{"ontapVersion":"ONTAP-9.4X8.T1.azure","licenseType":"azure-cot-standard-paygo","instanceType":"Standard_DS4_v2"},"writingSpeedState":"NORMAL","subnetId":"$azureSubnetId","svmPassword":"netapp123","vnetId":"$azureVnetId","cloudProviderAccount":"$azureAccountId","subscriptionId":"$azureSubscriptionId","cidr":"$azureCidr","dataEncryptionType":"NONE","ontapEncryptionParameters":null,"securityGroupId":null,"skipSnapshots":false,"diskSize":{ "size":1,"unit:"TB"},"storageType":"Premium_LRS","azureTags": []}'

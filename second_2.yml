@@ -1,12 +1,34 @@
 ---
   - hosts: localhost
     name: Volume Action
+    vars_prompt:
+      - name: admin_user_name
+        prompt: domain admin (enter if skipped)
+      - name: admin_password
+        prompt: domain admin password (enter if skipped)
     vars:
-      hostname: mtl-dc-na
-      username: admin
-      password: 
+      input: &input
+        hostname: "{{ netapp_hostname }}"
+        username: "{{ netapp_username }}"
+        password: "{{ netapp_password }}"
+      file: globals.yml
+    vars_files:
+      - "{{ file }}"
     tasks:
-    - include: createcifs.yml {{ item }}
-      with_items:
-        - { vol_name: cifs_revdevdmz_webupl_download, vserver: vs_dmzdev_mtl, aggr: aggr02_sata, junction_root: revdevdmz_cifs_root, cifs_share: webupl_download}
-        - { vol_name: cifs_revdevdmz_webupl_upload, vserver: vs_dmzdev_mtl, aggr: aggr02_sata, junction_root: revdevdmz_cifs_root, cifs_share: webupl_upload}
+    - name: Get Ontapi version
+      na_ontap_gather_facts:
+        state: info
+        <<: *input
+        https: true
+        ontapi: 32
+        validate_certs: false
+    - import_role:
+        name: na_ontap_nas_create
+      vars:
+        <<: *input
+      when: nas != None
+    - import_role:
+        name: na_ontap_san_create
+      vars:
+        <<: *input
+      when: luns != None

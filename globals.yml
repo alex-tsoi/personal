@@ -6,5 +6,7 @@ netapp_username: admin
 
 nas:
 #  - { name: nfs_share, protocol: nfs, vserver: nfs_vserver, client: 172.32.0.201, ro: sys, rw: sys, su: sys, aggr: aggr1, size: 10 }
-  - { name: cifs_revdevdmz_webupl_download, protocol: cifs, vserver: vs_dmzdev_mtl, aggr: aggr02_sata, size: 120, share: webupl_download}
-  - { name: cifs_revdevdmz_webupl_upload, protocol: cifs, vserver: vs_dmzdev_mtl, aggr: aggr02_sata, size: 120, share: webupl_upload}
+  - { name: cifs_revdevdmz_webupl_download, protocol: cifs, vserver: vs_dmzdev_mtl, aggr: aggr02_sata, size: 120, share: dev_webupl_download$}
+  - { name: cifs_revdevdmz_webupl_upload, protocol: cifs, vserver: vs_dmzdev_mtl, aggr: aggr02_sata, size: 120, share: dev_webupl_upload$}
+  - { name: cifs_dmz_webupl_download, protocol: cifs, vserver: vs_dmz_mtl, aggr: aggr02_sata, size: 120, share: stg_webupl_download$}
+  - { name: cifs_dmz_webupl_upload, protocol: cifs, vserver: vs_dmz_mtl, aggr: aggr02_sata, size: 120, share: stg_webupl_upload$}

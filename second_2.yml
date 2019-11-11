@@ -6,21 +6,7 @@
       username: admin
       password: 
     tasks:
-    - name: Volume Create
-      na_ontap_volume:
-        state: present
-        name: "{{ item.vol_name }}"
-        vserver: "{{ item.vserver }}"
-        aggregate_name: "{{ item.aggr }}"
-        size: 120
-        size_unit: gb
-        policy: default
-        junction_path: "/{{ item.vol_name }}"
-        hostname: "{{ hostname }}"
-        username: "{{ username }}"
-        password: "{{ password }}"
-        https: true
-        validate_certs: false
+    - include: createcifs.yml {{ item }}
       with_items:
-        - { vol_name: cifs_revdevdmz_webupl_download, vserver: vs_dmzdev_mtl, aggr: aggr02_sata}
-        - { vol_name: cifs_revdevdmz_webupl_upload, vserver: vs_dmzdev_mtl, aggr: aggr02_sata}
+        - { vol_name: cifs_revdevdmz_webupl_download, vserver: vs_dmzdev_mtl, aggr: aggr02_sata, junction_root: revdevdmz_cifs_root, cifs_share: webupl_download}
+        - { vol_name: cifs_revdevdmz_webupl_upload, vserver: vs_dmzdev_mtl, aggr: aggr02_sata, junction_root: revdevdmz_cifs_root, cifs_share: webupl_upload}

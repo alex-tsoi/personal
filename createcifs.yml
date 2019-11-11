@@ -1,0 +1,27 @@
+    - name: Volume Create
+      na_ontap_volume:
+        state: present
+        name: "{{ item.vol_name }}"
+        vserver: "{{ item.vserver }}"
+        aggregate_name: "{{ item.aggr }}"
+        size: 120
+        size_unit: gb
+        policy: default
+        space_guarantee: none
+        junction_path: "/{{ item.junction_root}}/{{ item.vol_name }}"
+        hostname: "{{ hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        https: true
+        validate_certs: false
+    - name: Create CIFS share
+      na_ontap_cifs:
+        state: present
+        share_name: "{{ item.cifs_share }}"
+        path: "/{{ item.junction_root}}/{{ item.vol_name }}"
+        vserver: vserverName
+        share_properties: browsable,oplocks
+        symlink_properties: read_only,enable
+        hostname: "{{ hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
